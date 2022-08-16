@@ -1,0 +1,56 @@
+using System.Data;
+using System.Diagnostics;
+using System.Text;
+using IronXL;
+
+var log = new EventLog("Security");
+var csv = new StringBuilder();
+DataTable dt = new DataTable();
+dt.Columns.Add("index", typeof(int));
+dt.Columns.Add("EventID", typeof(int));
+dt.Columns.Add("source", typeof(string));
+dt.Columns.Add("EntryType", typeof(string));
+dt.Columns.Add("TimeGenerated", typeof(DateTime));
+dt.Columns.Add("UserName", typeof(string));
+dt.Columns.Add("Message", typeof(string));
+foreach (EventLogEntry entry in log.Entries)
+{
+    int index = entry.Index;
+    int EventID = entry.EventID;
+    string source = entry.Source;
+    var EntryType = entry.EntryType;
+    DateTime TimeGenerated = entry.TimeGenerated;
+    string UserName = entry.UserName;
+    string Message = entry.Message;
+
+    dt.Rows.Add(new object[] {
+        index,
+        EventID,
+        source,
+        EntryType,
+        TimeGenerated,
+        UserName,
+        Message,
+         }) ;
+
+    
+}
+
+WorkBook wb = WorkBook.Create(ExcelFileFormat.XLS);
+wb.Metadata.Author = "OJ";
+WorkSheet ws = wb.DefaultWorkSheet;
+int rowCount = 1;
+foreach (DataRow row in dt.Rows)
+{
+    ws["A" + (rowCount)].Value = row[0].ToString();
+    ws["B" + (rowCount)].Value = row[1].ToString();
+    ws["C" + (rowCount)].Value = row[2].ToString();
+    ws["D" + (rowCount)].Value = row[3].ToString();
+    ws["E" + (rowCount)].Value = row[4].ToString();
+    ws["F" + (rowCount)].Value = row[5].ToString();
+    ws["G" + (rowCount)].Value = row[6].ToString();
+    rowCount++;
+}
+wb.SaveAsCsv("Event_viewer.csv",",");
+Console.WriteLine("successfully created.");
+Console.ReadKey();
