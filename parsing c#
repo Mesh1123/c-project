@@ -1,0 +1,140 @@
+using System.Data;
+using System.Xml.Linq;
+using System.Data.SqlClient;
+
+
+class Program
+{
+    const string FILENAME = @"C:\Users\neyma\test/clean.xml";
+    static void Main(string[] args)
+    {
+        DataTable dt = new DataTable();
+        dt.Columns.Add("EventID", typeof(int));
+        dt.Columns.Add("Task", typeof(int));
+        dt.Columns.Add("EvenRecordID", typeof(int));
+        dt.Columns.Add("Channel", typeof(string));
+        dt.Columns.Add("Computer", typeof(string));
+        dt.Columns.Add("TargetUserName", typeof(string));
+        dt.Columns.Add("TargetDomainName", typeof(string));
+        dt.Columns.Add("TargetSid", typeof(string));
+        dt.Columns.Add("OpCorrelationID", typeof(string));
+        dt.Columns.Add("SubjectUserSid", typeof(string));
+        dt.Columns.Add("SubjectUserName", typeof(string));
+        dt.Columns.Add("SubjectDomainName", typeof(string));
+        dt.Columns.Add("SubjectLogonId", typeof(string));
+        dt.Columns.Add("DSName", typeof(string));
+        dt.Columns.Add("DSType", typeof(string));
+        dt.Columns.Add("ObjectDN", typeof(string));
+        dt.Columns.Add("ObjectGUID", typeof(string));
+        dt.Columns.Add("ObjectClass", typeof(string));
+        dt.Columns.Add("AttributeLDAPDisplayName", typeof(string));
+        dt.Columns.Add("AttributeSyntaxOID", typeof(string));
+        dt.Columns.Add("AttributeValue", typeof(string));
+        dt.Columns.Add("OperationType", typeof(string));
+
+
+
+        XDocument doc = XDocument.Load(FILENAME);
+
+        foreach (XElement xEvent in doc.Descendants("Event"))
+        {
+            int EventID = (int)xEvent.Descendants("EventID").FirstOrDefault();
+            int Task = (int)xEvent.Descendants("Task").FirstOrDefault();
+            int EventRecordID = (int)xEvent.Descendants("EventRecordID").FirstOrDefault();
+            string Channel = (string)xEvent.Descendants("Channel").FirstOrDefault();
+            string Computer = (string)xEvent.Descendants("Computer").FirstOrDefault();
+            string TargetUserName = (string)xEvent.Descendants("Data").Where(x => (string)x.Attribute("Name") == "TargetUserName").FirstOrDefault();
+            string TargetDomainName = (string)xEvent.Descendants("Data").Where(x => (string)x.Attribute("Name") == "TargetDomainName").FirstOrDefault();
+            string TargetSid = (string)xEvent.Descendants("Data").Where(x => (string)x.Attribute("Name") == "TargetSid").FirstOrDefault();
+            string OpCorrelationID = (string)xEvent.Descendants("Data").Where(x => (string)x.Attribute("Name") == "OpCorrelationID").FirstOrDefault();
+            string SubjectUserSid = (string)xEvent.Descendants("Data").Where(x => (string)x.Attribute("Name") == "SubjectUserSid").FirstOrDefault();
+            string SubjectUserName = (string)xEvent.Descendants("Data").Where(x => (string)x.Attribute("Name") == "SubjectUserName").FirstOrDefault();
+            string SubjectDomainName = (string)xEvent.Descendants("Data").Where(x => (string)x.Attribute("Name") == "SubjectDomainName").FirstOrDefault();
+            string SubjectLogonId = (string)xEvent.Descendants("Data").Where(x => (string)x.Attribute("Name") == "SubjectLogonId").FirstOrDefault();
+            string DSName = (string)xEvent.Descendants("Data").Where(x => (string)x.Attribute("Name") == "DSName").FirstOrDefault();
+            string DSType = (string)xEvent.Descendants("Data").Where(x => (string)x.Attribute("Name") == "DSType").FirstOrDefault();
+            string ObjectDN = (string)xEvent.Descendants("Data").Where(x => (string)x.Attribute("Name") == "ObjectDN").FirstOrDefault();
+            string ObjectGUID = (string)xEvent.Descendants("Data").Where(x => (string)x.Attribute("Name") == "ObjectGUID").FirstOrDefault();
+            string ObjectClass = (string)xEvent.Descendants("Data").Where(x => (string)x.Attribute("Name") == "ObjectClass").FirstOrDefault();
+            string AttributeLDAPDisplayName = (string)xEvent.Descendants("Data").Where(x => (string)x.Attribute("Name") == "AttributeLDAPDisplayName").FirstOrDefault();
+            string AttributeSyntaxOID = (string)xEvent.Descendants("Data").Where(x => (string)x.Attribute("Name") == "AttributeSyntaxOID").FirstOrDefault();
+            string AttributeValue = (string)xEvent.Descendants("Data").Where(x => (string)x.Attribute("Name") == "AttributeValue").FirstOrDefault();
+            string OperationType = (string)xEvent.Descendants("Data").Where(x => (string)x.Attribute("Name") == "OperationType").FirstOrDefault();
+
+
+            dt.Rows.Add(new object[] { EventID,
+                Task, 
+                EventRecordID,
+                Channel,
+                Computer,
+                TargetUserName,
+                TargetDomainName,
+                TargetSid,
+                OpCorrelationID,
+                SubjectUserSid,
+                SubjectUserName,
+                SubjectDomainName,
+                SubjectLogonId ,
+                DSName,
+                DSType,
+                ObjectDN ,
+                ObjectGUID ,
+                ObjectClass,
+                AttributeLDAPDisplayName,
+                AttributeSyntaxOID,
+                AttributeValue,
+                OperationType
+                     });
+        }
+        /*
+         * 
+                CREATE TABLE Active(
+                EventID int,
+                Task int,
+                EventRecordID int,
+                Channel nvarchar(50),
+                computer nvarchar(50),
+                TargetUserName nvarchar(max),
+                TargetDomainName nvarchar(max),
+                TargetSid nvarchar(max),
+                OpCorrelationID nvarchar(max),
+                SubjectUserSid nvarchar(max),
+                SubjectUserName nvarchar(max),
+                SubjectDomainName nvarchar(max),
+                SubjectLogonId nvarchar(max),
+                DSName nvarchar(max),
+                DSType nvarchar(max),
+                ObjectDN nvarchar(max),
+                ObjectGUID nvarchar(max),
+                ObjectClass nvarchar(max),
+                AttributeLDAPDisplayName nvarchar(max),
+                AttributeSyntaxOID nvarchar(max),
+                AttributeValue nvarchar(max),
+                OperationType nvarchar(max),
+                )
+                    */
+
+        Console.WriteLine(string.Join("\r\n", dt.Rows.Cast<DataRow>().Select(r => string.Join(", ", r.ItemArray))));
+        string csDestination = "Server=LAPTOP-85VLC539;Database=sampleDB;Trusted_Connection=true"; 
+
+        using (SqlConnection connection = new SqlConnection(csDestination))
+        using (SqlBulkCopy bulkCopy = new SqlBulkCopy(connection))
+        {
+
+
+            connection.Open();
+            bulkCopy.BatchSize = 100;
+            bulkCopy.SqlRowsCopied +=new SqlRowsCopiedEventHandler(OnSqlRowsTransfer);
+            bulkCopy.NotifyAfter = 100;
+            bulkCopy.DestinationTableName = "Active";
+            bulkCopy.WriteToServer(dt);
+            connection.Close();
+        }
+         static void OnSqlRowsTransfer(object sender,SqlRowsCopiedEventArgs e)
+        {
+            Console.WriteLine("import {0} successfully.", e.RowsCopied);
+        }
+
+
+    }
+}
